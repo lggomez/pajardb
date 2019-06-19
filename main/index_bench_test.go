@@ -6,7 +6,6 @@ import (
 	"github.com/lggomez/pajardb/database"
 )
 
-var db = genDb()
 var rules = GenDataSet(100000)
 var testErr error
 
@@ -57,8 +56,13 @@ func genDb() *database.Db {
 }
 
 func Benchmark_LoadTableFromSlice(b *testing.B) {
+	var db *database.Db
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
+		b.StopTimer()
+		db = genDb()
+		b.StartTimer()
 		testErr = db.LoadTableFromSlice("rules", rules)
 	}
+	b.Log(db)
 }
