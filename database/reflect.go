@@ -9,26 +9,6 @@ import (
 
 var tokenCache = map[string][]string{}
 
-func getValueFromFieldName(fieldName string) (reflect.Value, error) {
-	var v, fv reflect.Value
-	fieldTokens := strings.Split(fieldName, ".")
-	var objPivot reflect.Value
-
-	// Traverse object to the correct field level
-	for _, field := range fieldTokens {
-		v = reflect.ValueOf(objPivot)
-
-		v = reflect.Indirect(v) // Dereference the pointer if any
-
-		fv = v.FieldByName(field)
-		fv = reflect.Indirect(fv)
-
-		objPivot = fv
-	}
-
-	return objPivot, nil
-}
-
 func tokenizeField(fieldName string) []string {
 	var fieldTokens []string
 	if tokens, found := tokenCache[fieldName]; found {
