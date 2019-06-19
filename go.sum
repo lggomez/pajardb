@@ -1,0 +1,6 @@
+github.com/OneOfOne/go-utils v0.0.0-20180319162427-6019ff89a94e h1:Kzs/MKSycSiJUW63f+BddSnX+3C5r+7JbHBV0b2wp50=
+github.com/OneOfOne/go-utils v0.0.0-20180319162427-6019ff89a94e/go.mod h1:oB/bL1T7aOtIWE/pkfR+SRdXfwbUyVe/0GogdHQxync=
+github.com/gofrs/uuid v3.2.0+incompatible h1:y12jRkkFxsd7GpqdSZ+/KCs/fJbqpEXSGd4+jfEaewE=
+github.com/gofrs/uuid v3.2.0+incompatible/go.mod h1:b2aQJv3Z4Fp6yNu3cdSllBxTCLRxnplIgP/c0N/04lM=
+github.com/tidwall/spinlock v0.0.0-20180312003310-9caf128cdc64 h1:t+yzSWHkMWw1pPxUH7MgqiRVycTsud/mCgBUdkjTbhU=
+github.com/tidwall/spinlock v0.0.0-20180312003310-9caf128cdc64/go.mod h1:tbnEyV8RKQ/S4PpqY6bxHz1TWomMPQ+YkJLcP2DByiA=

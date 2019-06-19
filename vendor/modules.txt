@@ -1,0 +1,4 @@
+# github.com/OneOfOne/go-utils v0.0.0-20180319162427-6019ff89a94e
+github.com/OneOfOne/go-utils/sync
+# github.com/gofrs/uuid v3.2.0+incompatible
+github.com/gofrs/uuid
