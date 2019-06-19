@@ -34,38 +34,34 @@ func tokenizeField(fieldName string) []string {
 	if tokens, found := tokenCache[fieldName]; found {
 		fieldTokens = tokens
 	} else {
-		fieldTokens := strings.Split(fieldName, ".")
+		fieldTokens = strings.Split(fieldName, ".")
 		tokenCache[fieldName] = fieldTokens
 	}
 	return fieldTokens
 }
 
-func getStructValueFromFieldName(fieldName string, value PtrValue) (StructValue, error) {
-	var v, fv reflect.Value
-	objPivot := value
+func findStructValueFromFieldName(fieldName string, value PtrValue) (StructValue, error) {
+	var pivot reflect.Value
+	pivot = reflect.ValueOf(value)
 
 	// Traverse object to the correct field level
 	for _, field := range tokenizeField(fieldName) {
-		v = reflect.ValueOf(objPivot)
-
-		v = reflect.Indirect(v) // Dereference the pointer if any
-
-		fv = v.FieldByName(field)
-		fv = reflect.Indirect(fv)
-
-		objPivot = fv.Interface()
+		pivot = reflect.Indirect(pivot)
+		pivot = pivot.FieldByName(field)
+		if !pivot.IsValid() {
+			return nil, fmt.Errorf("error getting field '%s' from value %v", fieldName, value)
+		}
 	}
 
-	return objPivot, nil
+	return pivot.Interface(), nil
 }
 
 func findFieldOnType(fieldName string, entityType reflect.Type) (reflect.StructField, bool) {
-	fieldTokens := strings.Split(fieldName, ".")
 	currentType := entityType
 	var currentField reflect.StructField
 	var found bool
 	// Traverse type to the correct field level
-	for _, field := range fieldTokens {
+	for _, field := range tokenizeField(fieldName) {
 		currentField, found = currentType.FieldByName(field)
 		if !found {
 			return currentField, false

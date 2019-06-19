@@ -30,7 +30,7 @@ func newBaseIndexer(fieldName string, entityType reflect.Type) (*BaseIndexer, er
 }
 
 func (b *BaseIndexer) insert(value PtrValue) error {
-	key, keyErr := getStructValueFromFieldName(b.fieldName, value)
+	key, keyErr := findStructValueFromFieldName(b.fieldName, value)
 
 	if keyErr != nil {
 		return keyErr
