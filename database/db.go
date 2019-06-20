@@ -85,7 +85,7 @@ func (d *Db) String() string {
 	for name, table := range d.tables {
 		indexers := ""
 		for _, i := range table.schema.indexers {
-			indexers = fmt.Sprintf("%s {%s-len:%v}", indexers, i.Field(), i.Len())
+			indexers = fmt.Sprintf("%s {%s-len:%v}", indexers, i.Field(), i.Size())
 		}
 		tables = fmt.Sprintf("%s%s - %v elems - idxs:%s\r\n",
 			tables,

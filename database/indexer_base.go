@@ -11,12 +11,11 @@ type InverseIndex map[StructValue][]PtrValue
 type BaseIndexer struct {
 	index     InverseIndex
 	fieldName string
-	len       int
 }
 
 func newBaseIndexer(fieldName string, entityType reflect.Type) (*BaseIndexer, error) {
 	index := InverseIndex{}
-	b := &BaseIndexer{index, fieldName, 0}
+	b := &BaseIndexer{index, fieldName}
 
 	if fieldName == "" {
 		return b, errors.New("field name is required")
@@ -38,7 +37,6 @@ func (b *BaseIndexer) insert(value PtrValue) error {
 
 	if _, ok := b.index[key]; !ok {
 		b.index[key] = []PtrValue{value}
-		b.len = b.len + 1
 	} else {
 		b.index[key] = append(b.index[key], value)
 	}
@@ -57,9 +55,6 @@ func (b *BaseIndexer) Field() string {
 	return b.fieldName
 }
 
-func (b *BaseIndexer) Len() int {
-	return b.len
-}
-
-func (b *BaseIndexer) computeMetadata() {
+func (b *BaseIndexer) Size() int {
+	return len(b.index)
 }
