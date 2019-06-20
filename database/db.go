@@ -51,17 +51,7 @@ func (d *Db) LoadTableFromSlice(tableName string, elements interface{}) error {
 
 	size := sliceValue.Len()
 	for i := 0; i < size; i++ {
-		e := sliceValue.Index(i)
-		var elPtr PtrValue
-		if e.Kind() != reflect.Ptr {
-			if !e.CanAddr() {
-				return errors.New("elements: CanAddr == false on slice element")
-			}
-			elPtr = e.Addr().Interface()
-		} else {
-			elPtr = e.Interface()
-		}
-		if insertErr := table.insert(elPtr); insertErr != nil {
+		if insertErr := table.insert(sliceValue.Index(i)); insertErr != nil {
 			return fmt.Errorf("insert error: %s", insertErr.Error())
 		}
 	}

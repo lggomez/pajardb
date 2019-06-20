@@ -19,13 +19,16 @@ type TableSchema struct {
 	indexers   map[string]*BaseIndexer
 }
 
-func (t *Table) insert(element PtrValue) error {
+func (t *Table) insert(element reflect.Value) error {
 	t.lock.Lock()
 	defer t.lock.Unlock()
-	t.elements = append(t.elements, element)
+
+	e := element.Interface()
+
+	t.elements = append(t.elements, e)
 
 	for _, indexer := range t.schema.indexers {
-		if insertErr := indexer.insert(element); insertErr != nil {
+		if insertErr := indexer.insert(e); insertErr != nil {
 			return fmt.Errorf("index insert error: %s", insertErr.Error())
 		}
 	}
