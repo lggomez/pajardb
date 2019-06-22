@@ -71,9 +71,10 @@ func main() {
 
 	qb := database.NewQueryBuilder("rules").
 		WithTerm("Site", "SITE_0").
+		WithTypedTerm(database.And, "Type", "TYPE_0").
 		WithTermIn("From.Id", "FROM_0", "FROM_1").
 		WithTermIn("To.Id", "TO_0", "TO_1").
-		WithTypedTerm(database.Or, "Type", "TYPE_0")
+		WithTypedTerm(database.Or, "Next.Id", "NEXT_0")
 	query, qbErr := qb.Build()
 	if qbErr != nil {
 		fmt.Printf("%v", qbErr.Error())
