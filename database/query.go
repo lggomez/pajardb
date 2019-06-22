@@ -23,8 +23,7 @@ func (qt QueryType) String() string {
 type TermType uint
 
 const (
-	nop TermType = iota
-	And
+	And TermType = iota
 	Or
 	Not
 	In

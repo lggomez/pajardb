@@ -20,7 +20,7 @@ func GenerateRule(base int, id string) *Rule {
 		ID:   id,
 		Site: fmt.Sprintf("SITE_%v", base%3),
 		From: Place{
-			Id:   fmt.Sprintf("FROM_%v", base%50),
+			Id:   fmt.Sprintf("FROM_%v", base%5),
 			Type: fmt.Sprintf("PLACETYPE_%v", base%10),
 		},
 		To: Place{
@@ -28,7 +28,7 @@ func GenerateRule(base int, id string) *Rule {
 			Type: fmt.Sprintf("PLACETYPE_%v", base%10),
 		},
 		Next: Place{
-			Id:   fmt.Sprintf("NEXT_%v", base%50),
+			Id:   fmt.Sprintf("NEXT_%v", base%500),
 			Type: fmt.Sprintf("PLACETYPE_%v", base%10),
 		},
 		Type: fmt.Sprintf("TYPE_%v", base%5),

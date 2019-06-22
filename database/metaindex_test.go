@@ -4,53 +4,53 @@ import (
 	"testing"
 )
 
-func TestNewGenerationalIndex(t *testing.T) {
-	if idx := NewGenerationalIndex(); idx == nil {
+func TestNewMetaIndex(t *testing.T) {
+	if idx := NewMetaIndex(); idx == nil {
 		t.Error("expected non nil value")
 	}
 }
 
-func TestGenerationalIndex_Promote(t *testing.T) {
+func TestMetaIndex_Promote(t *testing.T) {
 	type fields struct {
 		count int
 		value string
 	}
 	tests := []struct {
-		name   string
-		sut *GenerationalIndex
-		elements []fields
+		name          string
+		sut           *MetaIndex
+		elements      []fields
 		expectedCount int
 	}{
 		{
-			name: "no_elements",
-			sut: &GenerationalIndex{index: map[interface{}]byte{}},
-			elements: []fields{},
-			expectedCount:0,		
+			name:          "no_elements",
+			sut:           &MetaIndex{index: map[interface{}]byte{}},
+			elements:      []fields{},
+			expectedCount: 0,
 		},
 		{
 			name: "1_element_single",
-			sut: &GenerationalIndex{index: map[interface{}]byte{}},
+			sut:  &MetaIndex{index: map[interface{}]byte{}},
 			elements: []fields{
 				fields{count: 1, value: "foo"},
 			},
-			expectedCount:1,		
+			expectedCount: 1,
 		},
 		{
 			name: "1_element_multi",
-			sut: &GenerationalIndex{
-					index: map[interface{}]byte{},
-					currentGen: 9,
+			sut: &MetaIndex{
+				index:      map[interface{}]byte{},
+				currentGen: 9,
 			},
 			elements: []fields{
 				fields{count: 10, value: "foo"},
 			},
-			expectedCount:1,	
+			expectedCount: 1,
 		},
 		{
 			name: "5vs5_element_multi",
-			sut: &GenerationalIndex{
-					index: map[interface{}]byte{},
-					currentGen: 9,
+			sut: &MetaIndex{
+				index:      map[interface{}]byte{},
+				currentGen: 9,
 			},
 			elements: []fields{
 				fields{count: 10, value: "foo1"},
@@ -64,14 +64,14 @@ func TestGenerationalIndex_Promote(t *testing.T) {
 				fields{count: 9, value: "foo9"},
 				fields{count: 9, value: "foo0"},
 			},
-			expectedCount:5,	
+			expectedCount: 5,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			for _, e := range tt.elements {
 				for i := 0; i < e.count; i++ {
-					tt.sut.Insert(e.value)
+					tt.sut.Inc(e.value)
 				}
 			}
 
@@ -84,7 +84,7 @@ func TestGenerationalIndex_Promote(t *testing.T) {
 	}
 }
 
-// func TestGenerationalIndex_Insert(t *testing.T) {
+// func TestMetaIndex_Inc(t *testing.T) {
 // 	type fields struct {
 // 		index      map[interface{}]byte
 // 		currentGen byte
@@ -101,16 +101,16 @@ func TestGenerationalIndex_Promote(t *testing.T) {
 // 	}
 // 	for _, tt := range tests {
 // 		t.Run(tt.name, func(t *testing.T) {
-// 			g := &GenerationalIndex{
+// 			g := &MetaIndex{
 // 				index:      tt.fields.index,
 // 				currentGen: tt.fields.currentGen,
 // 			}
-// 			g.Insert(tt.args.value)
+// 			g.Inc(tt.args.value)
 // 		})
 // 	}
 // }
 
-// func TestGenerationalIndex_Delete(t *testing.T) {
+// func TestMetaIndex_Delete(t *testing.T) {
 // 	type fields struct {
 // 		index      map[interface{}]byte
 // 		currentGen byte
@@ -127,7 +127,7 @@ func TestGenerationalIndex_Promote(t *testing.T) {
 // 	}
 // 	for _, tt := range tests {
 // 		t.Run(tt.name, func(t *testing.T) {
-// 			g := &GenerationalIndex{
+// 			g := &MetaIndex{
 // 				index:      tt.fields.index,
 // 				currentGen: tt.fields.currentGen,
 // 			}
@@ -136,47 +136,47 @@ func TestGenerationalIndex_Promote(t *testing.T) {
 // 	}
 // }
 
-func TestGenerationalIndex_Flush(t *testing.T) {
+func TestMetaIndex_Flush(t *testing.T) {
 	type fields struct {
 		count int
 		value string
 	}
 	tests := []struct {
-		name   string
-		sut *GenerationalIndex
-		elements []fields
+		name          string
+		sut           *MetaIndex
+		elements      []fields
 		expectedCount int
 	}{
 		{
-			name: "no_elements",
-			sut: &GenerationalIndex{index: map[interface{}]byte{}},
-			elements: []fields{},
-			expectedCount:0,		
+			name:          "no_elements",
+			sut:           &MetaIndex{index: map[interface{}]byte{}},
+			elements:      []fields{},
+			expectedCount: 0,
 		},
 		{
 			name: "1_element_single",
-			sut: &GenerationalIndex{index: map[interface{}]byte{}},
+			sut:  &MetaIndex{index: map[interface{}]byte{}},
 			elements: []fields{
 				fields{count: 1, value: "foo"},
 			},
-			expectedCount:1,		
+			expectedCount: 1,
 		},
 		{
 			name: "1_element_multi",
-			sut: &GenerationalIndex{
-					index: map[interface{}]byte{},
-					currentGen: 9,
+			sut: &MetaIndex{
+				index:      map[interface{}]byte{},
+				currentGen: 9,
 			},
 			elements: []fields{
 				fields{count: 10, value: "foo"},
 			},
-			expectedCount:1,	
+			expectedCount: 1,
 		},
 		{
 			name: "15_element_multi",
-			sut: &GenerationalIndex{
-					index: map[interface{}]byte{},
-					currentGen: 9,
+			sut: &MetaIndex{
+				index:      map[interface{}]byte{},
+				currentGen: 9,
 			},
 			elements: []fields{
 				fields{count: 10, value: "foo1"},
@@ -195,14 +195,14 @@ func TestGenerationalIndex_Flush(t *testing.T) {
 				fields{count: 8, value: "foo14"},
 				fields{count: 8, value: "foo15"},
 			},
-			expectedCount:15,
+			expectedCount: 15,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			for _, e := range tt.elements {
 				for i := 0; i < e.count; i++ {
-					tt.sut.Insert(e.value)
+					tt.sut.Inc(e.value)
 				}
 			}
 

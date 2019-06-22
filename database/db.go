@@ -11,9 +11,7 @@ type StructValue interface{}
 type PtrValue interface{}
 
 type Db struct {
-	disableOptimizer bool
-	tables           map[string]*Table
-	mu               sync.RWMutex
+	tables map[string]*Table
 }
 
 func NewDB(ss []TableSchema) (*Db, error) {
