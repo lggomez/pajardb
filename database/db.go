@@ -80,6 +80,14 @@ func (d *Db) Search(query *Query) (*QueryResult, error) {
 	return result, nil
 }
 
+func (d *Db) Explain(query *Query) (string, error) {
+	plan, err := planQuery(d, query)
+	if err != nil {
+		return "query plan error", err
+	}
+	return plan.dumpPlan(), err
+}
+
 func (d *Db) String() string {
 	tables := ""
 	for name, table := range d.tables {
@@ -94,5 +102,5 @@ func (d *Db) String() string {
 			indexers,
 		)
 	}
-	return fmt.Sprintf("Tables: \r\n\t%s", tables)
+	return fmt.Sprintf("Tables: \r\n\t%s\r\n", tables)
 }

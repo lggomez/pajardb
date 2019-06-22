@@ -23,7 +23,8 @@ func (qt QueryType) String() string {
 type TermType uint
 
 const (
-	And TermType = iota
+	nop TermType = iota
+	And
 	Or
 	Not
 	In
@@ -77,7 +78,7 @@ func (q *Query) String() string {
 			termStr,
 		)
 	}
-	return fmt.Sprintf("Query - table %s:\r\n\t%s", q.table, str)
+	return fmt.Sprintf("Query - table %s:\r\n\t%s\r\n", q.table, str)
 }
 
 type QueryBuilder struct {

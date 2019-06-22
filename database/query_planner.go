@@ -2,6 +2,7 @@ package database
 
 import (
 	"errors"
+	"fmt"
 )
 
 type searchOp struct {
@@ -26,19 +27,24 @@ func planQuery(db *Db, query *Query) (*queryPlan, error) {
 		return plan, errors.New("query must have search terms")
 	}
 
-	// First pass: group terms by type
-	prevType := query.terms[0].termType
-	currentStep := queryStep{
-		termType:   prevType,
-		operations: []*searchOp{},
-	}
-	for _, t := range query.terms {
-		// End of previous group
-		if t.termType != prevType {
+	// Process and group terms by type (except In, Not) into steps
+	var currentStep *queryStep
+	var prevType TermType
+	for i, t := range query.terms {
+		// Add first step
+		if i == 0 {
 			prevType = t.termType
-			newStep := &currentStep
-			plan.orderedSteps = append(plan.orderedSteps, newStep)
-			currentStep = queryStep{
+			currentStep = &queryStep{
+				termType:   t.termType,
+				operations: []*searchOp{},
+			}
+		}
+
+		// Step transition
+		if (t.termType != prevType) || ((t.termType == In) || (t.termType == Not)) {
+			prevType = t.termType
+			plan.orderedSteps = append(plan.orderedSteps, currentStep)
+			currentStep = &queryStep{
 				termType:   t.termType,
 				operations: []*searchOp{},
 			}
@@ -49,9 +55,14 @@ func planQuery(db *Db, query *Query) (*queryPlan, error) {
 			index := table.schema.indexers[p.FieldName]
 			op := &searchOp{
 				index:  index,
-				values: []StructValue{},
+				values: []StructValue{p.Value},
 			}
 			currentStep.operations = append(currentStep.operations, op)
+		}
+
+		// Add last step
+		if i == (len(query.terms) - 1) {
+			plan.orderedSteps = append(plan.orderedSteps, currentStep)
 		}
 	}
 
@@ -60,6 +71,14 @@ func planQuery(db *Db, query *Query) (*queryPlan, error) {
 
 func (p *queryPlan) dumpPlan() string {
 	str := ""
+
+	for i, s := range p.orderedSteps {
+		stepStr := fmt.Sprintf("type:'%s' operands:\r\n\t", s.termType)
+		for _, op := range s.operations {
+			stepStr = fmt.Sprintf("%s idx:%s - %+v\r\n\t", stepStr, op.index.fieldName, op.values)
+		}
+		str = fmt.Sprintf("%s step %v -> %s\r\n", str, i+1, stepStr)
+	}
 
 	return str
 }
