@@ -31,17 +31,15 @@ func planQuery(db *Db, query *Query) (*queryPlan, error) {
 	var currentStep *queryStep
 	var prevType TermType
 	for i, t := range query.terms {
-		// Add first step
+		// Step transitions
 		if i == 0 {
 			prevType = t.termType
 			currentStep = &queryStep{
 				termType:   t.termType,
 				operations: []*searchOp{},
 			}
-		}
-
-		// Step transition
-		if (t.termType != prevType) || ((t.termType == In) || (t.termType == Not)) {
+			plan.orderedSteps = append(plan.orderedSteps, currentStep)
+		} else if (t.termType != prevType) || ((t.termType == In) || (t.termType == Not)) {
 			prevType = t.termType
 			plan.orderedSteps = append(plan.orderedSteps, currentStep)
 			currentStep = &queryStep{
@@ -58,11 +56,6 @@ func planQuery(db *Db, query *Query) (*queryPlan, error) {
 				values: []StructValue{p.Value},
 			}
 			currentStep.operations = append(currentStep.operations, op)
-		}
-
-		// Add last step
-		if i == (len(query.terms) - 1) {
-			plan.orderedSteps = append(plan.orderedSteps, currentStep)
 		}
 	}
 

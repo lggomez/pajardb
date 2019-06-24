@@ -72,9 +72,8 @@ func main() {
 	qb := database.NewQueryBuilder("rules").
 		WithTerm("Site", "SITE_0").
 		WithTypedTerm(database.And, "Type", "TYPE_0").
-		WithTermIn("From.Id", "FROM_0", "FROM_1").
-		WithTermIn("To.Id", "TO_0", "TO_1").
-		WithTypedTerm(database.Or, "Next.Id", "NEXT_0")
+		WithTermIn("From.Id", "FROM_0", "FROM_1", "FROM_2").
+		WithTermIn("To.Id", "TO_0", "TO_1", "TO_2")
 	query, qbErr := qb.Build()
 	if qbErr != nil {
 		fmt.Printf("%v", qbErr.Error())
@@ -84,11 +83,20 @@ func main() {
 
 	planExp, expErr := db.Explain(query)
 	if expErr != nil {
-		fmt.Printf("%v", qbErr.Error())
+		fmt.Printf("%v", expErr.Error())
 		return
 	}
 	fmt.Printf("QUERY PLAN: \r\n%s\r\n", planExp)
 
+	searchStart := time.Now()
+	results, searchErr := db.Search(query)
+	if searchErr != nil {
+		fmt.Printf("%v", searchErr.Error())
+		return
+	}
+	searchElapsed := time.Since(searchStart)
+	fmt.Printf("SEARCH RESULTS: %v - elapsed: %s\r\n", results.Len(), searchElapsed)
+
 	elapsed := time.Since(start)
-	fmt.Printf("Time elapsed %s\r\n", elapsed)
+	fmt.Printf("Total time elapsed %s\r\n", elapsed)
 }

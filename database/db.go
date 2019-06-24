@@ -73,9 +73,15 @@ func (d *Db) addTable(s TableSchema) error {
 }
 
 func (d *Db) Search(query *Query) (*QueryResult, error) {
-	result := &QueryResult{}
+	plan, planErr := planQuery(d, query)
 
-	return result, nil
+	if planErr != nil {
+		return nil, planErr
+	}
+
+	result, searchErr := search(d, query, plan)
+
+	return result, searchErr
 }
 
 func (d *Db) Explain(query *Query) (string, error) {
