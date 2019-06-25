@@ -59,7 +59,8 @@ func genSearchDataSet() []*Rule {
 	return rules
 }
 
-func genSearchDbWithRules() *database.Db {
+func genSearchDbWithRules(t *testing.T) *database.Db {
+	t.Helper()
 	schemas := []database.TableSchema{}
 
 	// Create table schema
@@ -109,7 +110,7 @@ func genSearchDbWithRules() *database.Db {
 
 func TestSearch_EveryMainField(t *testing.T) {
 	var q *database.Query
-	db := genSearchDbWithRules()
+	db := genSearchDbWithRules(t)
 	getQb := func(field string, value string) *database.Query {
 		query, _ := database.NewQueryBuilder("rules").
 			WithTerm(field, value).
@@ -174,8 +175,85 @@ func TestSearch_EveryMainField(t *testing.T) {
 	moduloResultAssertion(t, searchResult, 5)
 }
 
+func TestSearch_AndFields(t *testing.T) {
+	//var planExp string
+	var expErr error
+	db := genSearchDbWithRules(t)
+
+	q, queryErr := database.NewQueryBuilder("rules").
+		WithTypedTerm(database.And, "Site", "SITE_0").
+		WithTypedTerm(database.And, "Next.Id", "NEXT_0").
+		Build()
+	if queryErr != nil {
+		t.Fatalf("unexpected querybuilder error %s", queryErr.Error())
+	}
+	/*planExp*/ _, expErr = db.Explain(q)
+	if expErr != nil {
+		t.Fatalf("unexpected query explain error %s", expErr.Error())
+	}
+	//fmt.Printf("QUERY PLAN: \r\n%s\r\n", planExp)
+	searchResult, searchErr = db.Search(q)
+	if searchErr != nil {
+		t.Fatalf("unexpected search error %s", searchErr.Error())
+	}
+
+	resultAssertion(t, searchResult, 2)
+}
+
+func TestSearch_OrFields(t *testing.T) {
+	//var planExp string
+	var expErr error
+	db := genSearchDbWithRules(t)
+
+	q, queryErr := database.NewQueryBuilder("rules").
+		WithTypedTerm(database.Or, "Site", "SITE_0").
+		WithTypedTerm(database.Or, "Site", "SITE_1").
+		Build()
+	if queryErr != nil {
+		t.Fatalf("unexpected querybuilder error %s", queryErr.Error())
+	}
+	/*planExp*/ _, expErr = db.Explain(q)
+	if expErr != nil {
+		t.Fatalf("unexpected query explain error %s", expErr.Error())
+	}
+	//fmt.Printf("QUERY PLAN: \r\n%s\r\n", planExp)
+	searchResult, searchErr = db.Search(q)
+	if searchErr != nil {
+		t.Fatalf("unexpected search error %s", searchErr.Error())
+	}
+
+	resultAssertion(t, searchResult, 100)
+}
+
+func TestSearch_OrFields2(t *testing.T) {
+	//var planExp string
+	var expErr error
+	db := genSearchDbWithRules(t)
+
+	q, queryErr := database.NewQueryBuilder("rules").
+		WithTypedTerm(database.Or, "Site", "SITE_0").
+		WithTypedTerm(database.Or, "Site", "notavalue").
+		Build()
+	if queryErr != nil {
+		t.Fatalf("unexpected querybuilder error %s", queryErr.Error())
+	}
+	/*planExp*/ _, expErr = db.Explain(q)
+	if expErr != nil {
+		t.Fatalf("unexpected query explain error %s", expErr.Error())
+	}
+	//fmt.Printf("QUERY PLAN: \r\n%s\r\n", planExp)
+	searchResult, searchErr = db.Search(q)
+	if searchErr != nil {
+		t.Fatalf("unexpected search error %s", searchErr.Error())
+	}
+
+	resultAssertion(t, searchResult, 50)
+}
+
 func TestSearch_InFields(t *testing.T) {
-	db := genSearchDbWithRules()
+	//var planExp string
+	var expErr error
+	db := genSearchDbWithRules(t)
 
 	q, queryErr := database.NewQueryBuilder("rules").
 		WithTermIn("Site", "SITE_0", "SITE_1").
@@ -183,11 +261,11 @@ func TestSearch_InFields(t *testing.T) {
 	if queryErr != nil {
 		t.Fatalf("unexpected querybuilder error %s", queryErr.Error())
 	}
-	planExp, expErr := db.Explain(q)
+	/*planExp*/ _, expErr = db.Explain(q)
 	if expErr != nil {
 		t.Fatalf("unexpected query explain error %s", expErr.Error())
 	}
-	fmt.Printf("QUERY PLAN: \r\n%s\r\n", planExp)
+	//fmt.Printf("QUERY PLAN: \r\n%s\r\n", planExp)
 	searchResult, searchErr = db.Search(q)
 	if searchErr != nil {
 		t.Fatalf("unexpected search error %s", searchErr.Error())
@@ -197,7 +275,7 @@ func TestSearch_InFields(t *testing.T) {
 }
 
 func TestSearch_InFields2(t *testing.T) {
-	db := genSearchDbWithRules()
+	db := genSearchDbWithRules(t)
 
 	nextIDs := make([]interface{}, 25, 25)
 	for i := 0; i < 25; i++ {
@@ -210,17 +288,39 @@ func TestSearch_InFields2(t *testing.T) {
 	if queryErr != nil {
 		t.Fatalf("unexpected querybuilder error %s", queryErr.Error())
 	}
-	planExp, expErr := db.Explain(q)
+	_, expErr := db.Explain(q)
 	if expErr != nil {
 		t.Fatalf("unexpected query explain error %s", expErr.Error())
 	}
-	fmt.Printf("QUERY PLAN: \r\n%s\r\n", planExp)
+	//fmt.Printf("QUERY PLAN: \r\n%s\r\n", planExp)
 	searchResult, searchErr = db.Search(q)
 	if searchErr != nil {
 		t.Fatalf("unexpected search error %s", searchErr.Error())
 	}
 
 	resultAssertion(t, searchResult, 100)
+}
+
+func TestSearch_NotFields(t *testing.T) {
+	db := genSearchDbWithRules(t)
+
+	q, queryErr := database.NewQueryBuilder("rules").
+		WithTypedTerm(database.Not, "From.Id", "FROM_0").
+		Build()
+	if queryErr != nil {
+		t.Fatalf("unexpected querybuilder error %s", queryErr.Error())
+	}
+	_, expErr := db.Explain(q)
+	if expErr != nil {
+		t.Fatalf("unexpected query explain error %s", expErr.Error())
+	}
+	//fmt.Printf("QUERY PLAN: \r\n%s\r\n", planExp)
+	searchResult, searchErr = db.Search(q)
+	if searchErr != nil {
+		t.Fatalf("unexpected search error %s", searchErr.Error())
+	}
+
+	resultAssertion(t, searchResult, 80)
 }
 
 func moduloResultAssertion(t *testing.T, result *database.QueryResult, mod int) {

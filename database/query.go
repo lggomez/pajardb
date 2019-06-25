@@ -1,6 +1,7 @@
 package database
 
 import (
+	"errors"
 	"fmt"
 )
 
@@ -133,10 +134,10 @@ func (qb *QueryBuilder) validate() error {
 	for _, qt := range qb.terms {
 		for _, param := range qt.params {
 			if param.FieldName == "" {
-				return fmt.Errorf("field name required")
+				return errors.New("field name required")
 			}
 			if param.Value == nil {
-				return fmt.Errorf("query value cannot be nil")
+				return errors.New("query value cannot be nil")
 			}
 		}
 	}

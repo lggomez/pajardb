@@ -23,13 +23,13 @@ func TestMetaIndex_Promote(t *testing.T) {
 	}{
 		{
 			name:          "no_elements",
-			sut:           &MetaIndex{index: map[interface{}]byte{}},
+			sut:           &MetaIndex{index: map[interface{}]int{}},
 			elements:      []fields{},
 			expectedCount: 0,
 		},
 		{
 			name: "1_element_single",
-			sut:  &MetaIndex{index: map[interface{}]byte{}},
+			sut:  &MetaIndex{index: map[interface{}]int{}},
 			elements: []fields{
 				fields{count: 1, value: "foo"},
 			},
@@ -38,7 +38,7 @@ func TestMetaIndex_Promote(t *testing.T) {
 		{
 			name: "1_element_multi",
 			sut: &MetaIndex{
-				index:      map[interface{}]byte{},
+				index:      map[interface{}]int{},
 				currentGen: 9,
 			},
 			elements: []fields{
@@ -49,7 +49,7 @@ func TestMetaIndex_Promote(t *testing.T) {
 		{
 			name: "5vs5_element_multi",
 			sut: &MetaIndex{
-				index:      map[interface{}]byte{},
+				index:      map[interface{}]int{},
 				currentGen: 9,
 			},
 			elements: []fields{
@@ -86,8 +86,8 @@ func TestMetaIndex_Promote(t *testing.T) {
 
 // func TestMetaIndex_Inc(t *testing.T) {
 // 	type fields struct {
-// 		index      map[interface{}]byte
-// 		currentGen byte
+// 		index      map[interface{}]int
+// 		currentGen int
 // 	}
 // 	type args struct {
 // 		value interface{}
@@ -112,8 +112,8 @@ func TestMetaIndex_Promote(t *testing.T) {
 
 // func TestMetaIndex_Delete(t *testing.T) {
 // 	type fields struct {
-// 		index      map[interface{}]byte
-// 		currentGen byte
+// 		index      map[interface{}]int
+// 		currentGen int
 // 	}
 // 	type args struct {
 // 		value interface{}
@@ -149,13 +149,13 @@ func TestMetaIndex_Flush(t *testing.T) {
 	}{
 		{
 			name:          "no_elements",
-			sut:           &MetaIndex{index: map[interface{}]byte{}},
+			sut:           &MetaIndex{index: map[interface{}]int{}},
 			elements:      []fields{},
 			expectedCount: 0,
 		},
 		{
 			name: "1_element_single",
-			sut:  &MetaIndex{index: map[interface{}]byte{}},
+			sut:  &MetaIndex{index: map[interface{}]int{}},
 			elements: []fields{
 				fields{count: 1, value: "foo"},
 			},
@@ -164,7 +164,7 @@ func TestMetaIndex_Flush(t *testing.T) {
 		{
 			name: "1_element_multi",
 			sut: &MetaIndex{
-				index:      map[interface{}]byte{},
+				index:      map[interface{}]int{},
 				currentGen: 9,
 			},
 			elements: []fields{
@@ -175,7 +175,7 @@ func TestMetaIndex_Flush(t *testing.T) {
 		{
 			name: "15_element_multi",
 			sut: &MetaIndex{
-				index:      map[interface{}]byte{},
+				index:      map[interface{}]int{},
 				currentGen: 9,
 			},
 			elements: []fields{

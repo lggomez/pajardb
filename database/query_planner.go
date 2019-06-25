@@ -50,12 +50,28 @@ func planQuery(db *Db, query *Query) (*queryPlan, error) {
 
 		// Group operations
 		for _, p := range t.params {
-			index := table.schema.indexers[p.FieldName]
-			op := &searchOp{
-				index:  index,
-				values: []StructValue{p.Value},
+			if t.termType == Not {
+				// Apply an inverse indexer fetch for 'Not' terms
+				// and transform it into an 'And' term
+				currentStep.termType = And
+				baseIndex := table.schema.indexers[p.FieldName]
+				for key, _ := range baseIndex.index {
+					if key != p.Value {
+						op := &searchOp{
+							index:  baseIndex,
+							values: []StructValue{key},
+						}
+						currentStep.operations = append(currentStep.operations, op)
+					}
+				}
+			} else {
+				index := table.schema.indexers[p.FieldName]
+				op := &searchOp{
+					index:  index,
+					values: []StructValue{p.Value},
+				}
+				currentStep.operations = append(currentStep.operations, op)
 			}
-			currentStep.operations = append(currentStep.operations, op)
 		}
 	}
 

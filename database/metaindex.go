@@ -6,18 +6,19 @@ package database
 //
 // This struct is not goroutine safe and intended for linear processing only
 type MetaIndex struct {
-	index      map[interface{}]byte
-	currentGen byte
+	index      map[interface{}]int
+	targetGen int
+	currentGen int
 }
 
 func NewMetaIndex() *MetaIndex {
 	return &MetaIndex{
-		index: map[interface{}]byte{},
+		index: map[interface{}]int{},
 	}
 }
 
 func (g *MetaIndex) Promote() {
-	g.currentGen++
+	g.currentGen = g.targetGen
 	if len(g.index) == 0 {
 		return
 	}
@@ -31,6 +32,9 @@ func (g *MetaIndex) Promote() {
 func (g *MetaIndex) Inc(value interface{}) {
 	if val, ok := g.index[value]; ok {
 		g.index[value] = val + 1
+		if g.index[value] > g.targetGen {
+			g.targetGen = g.index[value]
+		}
 	} else {
 		g.index[value] = 1
 	}

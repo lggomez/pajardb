@@ -10,6 +10,8 @@ func search(db *Db, query *Query, plan *queryPlan) (*QueryResult, error) {
 					if step.termType == Or && metaIndex.IsInLastGeneration(elem) {
 						// Inclusively count element for or terms
 						metaIndex.Inc(elem)
+					} else if step.termType == Not {
+						metaIndex.Dec(elem)
 					} else {
 						metaIndex.Inc(elem)
 					}
