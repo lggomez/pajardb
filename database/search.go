@@ -1,16 +1,16 @@
 package database
 
 func search(db *Db, query *Query, plan *queryPlan) (*QueryResult, error) {
-	metaIndex := NewMetaIndex()
+	metaIndex := NewMetaIndex(plan)
 
 	for _, step := range plan.orderedSteps {
-		for _, op := range step.operations {
+		for i, op := range step.operations {
+			if i > 0 && step.termType == And {
+				metaIndex.target = metaIndex.target + 1
+			}
 			for _, key := range op.values {
-				for _, elem := range op.index.index[key] {
-					if step.termType == Or && metaIndex.IsInLastGeneration(elem) {
-						// Inclusively count element for or terms
-						metaIndex.Inc(elem)
-					} else if step.termType == Not {
+				for _, elem := range op.indexer.index[key] {
+					if step.termType == Not {
 						metaIndex.Dec(elem)
 					} else {
 						metaIndex.Inc(elem)
@@ -18,7 +18,6 @@ func search(db *Db, query *Query, plan *queryPlan) (*QueryResult, error) {
 				}
 			}
 		}
-		metaIndex.Promote()
 	}
 
 	result := &QueryResult{

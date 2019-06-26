@@ -6,8 +6,9 @@ import (
 )
 
 type searchOp struct {
-	values []StructValue
-	index  *BaseIndexer
+	values      []StructValue
+	indexer     *BaseIndexer
+	cardinality int
 }
 
 type queryStep struct {
@@ -54,21 +55,23 @@ func planQuery(db *Db, query *Query) (*queryPlan, error) {
 				// Apply an inverse indexer fetch for 'Not' terms
 				// and transform it into an 'And' term
 				currentStep.termType = And
-				baseIndex := table.schema.indexers[p.FieldName]
-				for key, _ := range baseIndex.index {
+				indexer := table.schema.indexers[p.FieldName]
+				for key, _ := range indexer.index {
 					if key != p.Value {
 						op := &searchOp{
-							index:  baseIndex,
-							values: []StructValue{key},
+							indexer:     indexer,
+							values:      []StructValue{key},
+							cardinality: len(indexer.index[p.Value]),
 						}
 						currentStep.operations = append(currentStep.operations, op)
 					}
 				}
 			} else {
-				index := table.schema.indexers[p.FieldName]
+				indexer := table.schema.indexers[p.FieldName]
 				op := &searchOp{
-					index:  index,
-					values: []StructValue{p.Value},
+					indexer:     indexer,
+					values:      []StructValue{p.Value},
+					cardinality: len(indexer.index[p.Value]),
 				}
 				currentStep.operations = append(currentStep.operations, op)
 			}
@@ -78,13 +81,27 @@ func planQuery(db *Db, query *Query) (*queryPlan, error) {
 	return plan, nil
 }
 
+func (p *queryPlan) getMaxCardinality() int {
+	max := 0
+	for _, step := range p.orderedSteps {
+		sum := 0
+		for _, op := range step.operations {
+			sum = sum + op.cardinality
+		}
+		if sum > max {
+			max = sum
+		}
+	}
+	return max
+}
+
 func (p *queryPlan) dumpPlan() string {
 	str := ""
 
 	for i, s := range p.orderedSteps {
 		stepStr := fmt.Sprintf("type:'%s' operands:\r\n\t", s.termType)
 		for _, op := range s.operations {
-			stepStr = fmt.Sprintf("%s idx:%s - %+v\r\n\t", stepStr, op.index.fieldName, op.values)
+			stepStr = fmt.Sprintf("%s idx:%s - %+v\r\n\t", stepStr, op.indexer.fieldName, op.values)
 		}
 		str = fmt.Sprintf("%s step %v -> %s\r\n", str, i+1, stepStr)
 	}

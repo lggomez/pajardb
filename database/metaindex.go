@@ -1,76 +1,35 @@
 package database
 
 // MetaIndex is an index that will track insertions per inverse index element
-// and discard elements below a generation threshold upon promotions
-// Promotions can be triggered as required by the consumer
+// and discard elements below a target
 //
 // This struct is not goroutine safe and intended for linear processing only
 type MetaIndex struct {
-	index      map[interface{}]int
-	targetGen int
-	currentGen int
+	index  map[interface{}]int
+	target int
 }
 
-func NewMetaIndex() *MetaIndex {
+func NewMetaIndex(plan *queryPlan) *MetaIndex {
 	return &MetaIndex{
-		index: map[interface{}]int{},
-	}
-}
-
-func (g *MetaIndex) Promote() {
-	g.currentGen = g.targetGen
-	if len(g.index) == 0 {
-		return
-	}
-	for k, v := range g.index {
-		if v < g.currentGen {
-			delete(g.index, k)
-		}
+		index:  make(map[interface{}]int, plan.getMaxCardinality()),
+		target: len(plan.orderedSteps),
 	}
 }
 
 func (g *MetaIndex) Inc(value interface{}) {
-	if val, ok := g.index[value]; ok {
-		g.index[value] = val + 1
-		if g.index[value] > g.targetGen {
-			g.targetGen = g.index[value]
-		}
-	} else {
-		g.index[value] = 1
-	}
+	g.index[value]++
 }
 
 func (g *MetaIndex) Dec(value interface{}) {
-	if val, ok := g.index[value]; ok {
-		g.index[value] = val - 1
-	}
-}
-
-func (g *MetaIndex) IsInCurrentGeneration(value interface{}) bool {
-	if val, ok := g.index[value]; ok && (val == g.currentGen+1) {
-		return true
-	}
-	return false
-}
-
-func (g *MetaIndex) IsInLastGeneration(value interface{}) bool {
-	if val, ok := g.index[value]; ok && (val == g.currentGen-1) {
-		return true
-	}
-	return false
-}
-
-func (g *MetaIndex) Delete(value interface{}) {
-	delete(g.index, value)
+	g.index[value]--
 }
 
 func (g *MetaIndex) Flush() []PtrValue {
-	result := make([]PtrValue, len(g.index), len(g.index))
-	var i int
-	for k, _ := range g.index {
-		result[i] = k
-		delete(g.index, k)
-		i++
+	result := make([]PtrValue, 0, len(g.index))
+	for k, val := range g.index {
+		if val >= g.target {
+			result = append(result, k)
+		}
 	}
 	return result
 }

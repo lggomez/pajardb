@@ -107,7 +107,7 @@ func genDb() *database.Db {
 }
 
 // rm mem.out && rm cpu.out && rm main.test
-// go test -cpuprofile=cpu.out -benchmem -memprofile=mem.out -run=^$ -bench=Benchmark_LoadTableFromSlice -v
+// go test -cpuprofile=cpu.out -benchmem -memprofile=mem.out -run=^$ -bench=Benchmark_SearchMiddle -v
 // pprof -http=:8080 mem.out
 func Benchmark_LoadTableFromSlice(b *testing.B) {
 	var db *database.Db
